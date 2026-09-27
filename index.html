@@ -102,19 +102,19 @@ main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:6px 24px
 .search-btn:hover{filter:brightness(1.12)}
 .search-btn svg{width:16px;height:16px}
 .hot-tips{margin-top:14px;font-size:13px;color:var(--text-dim);display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
-.hot-tips a{padding:7px 14px;border-radius:20px;background:var(--card);border:1px solid var(--border);transition:.2s;font-size:12px}
+.hot-tips a{padding:8px 14px;border-radius:20px;background:var(--card);border:1px solid var(--border);transition:.2s;font-size:12px;display:inline-flex;align-items:center;min-height:44px}
 .hot-tips a:hover{border-color:var(--accent);color:var(--accent)}
 
 /* 分类导航 */
 .cats{display:flex;align-items:center;justify-content:center;gap:8px;margin:34px 0 22px;flex-wrap:wrap}
 .cat-btn{
   padding:10px 18px;border-radius:999px;font-size:14px;color:var(--text-dim);
-  border:1px solid var(--border);background:var(--card);transition:.2s;
+  border:1px solid var(--border);background:var(--card);transition:.2s;min-height:44px;display:inline-flex;align-items:center;
 }
 .cat-btn:hover{color:var(--text);border-color:var(--accent)}
 .cat-btn.active{background:var(--accent);color:#04222b;font-weight:700;border-color:var(--accent)}
-.cat-btn .count{font-size:11px;opacity:.7;margin-left:4px}
-.add-site-btn{padding:8px 16px;border-radius:999px;font-size:14px;color:var(--accent);border:1px dashed var(--accent);transition:.2s;display:flex;align-items:center;gap:6px}
+.cat-btn .count{font-size:12px;opacity:.7;margin-left:4px}
+.add-site-btn{padding:10px 18px;border-radius:999px;font-size:14px;color:var(--accent);border:1px dashed var(--accent);transition:.2s;display:flex;align-items:center;gap:6px;min-height:44px}
 .add-site-btn:hover{background:var(--accent-soft)}
 
 /* 站点网格 */
@@ -138,8 +138,8 @@ main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:6px 24px
   font-weight:700;font-size:17px;color:#fff;letter-spacing:0;
 }
 .site-meta{flex:1;min-width:0}
-.site-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.site-desc{font-size:12px;color:var(--text-dim);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.site-name{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.site-desc{display:block;font-size:12px;color:var(--text-dim);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .site-del{
   position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:7px;
   display:none;place-items:center;background:rgba(239,68,68,.15);color:#f87171;font-size:12px;
@@ -153,7 +153,7 @@ main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:6px 24px
 /* ===== 页脚 ===== */
 footer{position:relative;z-index:1;text-align:center;padding:26px 20px 40px;color:var(--text-dim);font-size:13px;border-top:1px solid var(--border);max-width:1180px;margin:0 auto}
 footer .foot-links{margin-bottom:8px;display:flex;justify-content:center;gap:18px}
-footer .foot-links a{color:var(--text-dim);transition:.2s}
+footer .foot-links a{color:var(--text-dim);transition:.2s;display:inline-flex;align-items:center;min-height:44px;padding:0 6px}
 footer .foot-links a:hover{color:var(--accent)}
 
 /* ===== 添加站点弹窗 ===== */
@@ -289,6 +289,8 @@ footer .foot-links a:hover{color:var(--accent)}
 
 <div class="toast" id="toast"></div>
 
+<!-- something todo: JS 数据与逻辑 -->
+<script src="sites.js"></script>
 <script>
 /* ===== 数据 ===== */
 var CATS = [
@@ -301,102 +303,21 @@ var CATS = [
   {id:"pan",   name:"网盘",   color:"#14b8a6"},
   {id:"tool",  name:"效率",   color:"#a855f7"},
   {id:"study", name:"学习",   color:"#f97316"},
-  {id:"media", name:"影音",   color:"#eab308"}
+  {id:"media", name:"影音",   color:"#eab308"},
+  {id:"mail",  name:"邮箱",   color:"#38bdf8"},
+  {id:"trans", name:"翻译",   color:"#8b5cf6"},
+  {id:"map",   name:"出行",   color:"#22c55e"},
+  {id:"life",  name:"生活",   color:"#f43f5e"},
+  {id:"fin",   name:"理财",   color:"#facc15"},
+  {id:"game",  name:"游戏",   color:"#e879f9"},
+  {id:"design",name:"设计",   color:"#fb7185"},
+  {id:"job",   name:"招聘",   color:"#34d399"},
+  {id:"health",name:"健康",   color:"#4ade80"},
+  {id:"gov",   name:"政务",   color:"#94a3b8"},
+  {id:"sport", name:"体育",   color:"#f87171"},
+  {id:"anime", name:"动漫",   color:"#fb923c"}
 ];
-var DEFAULT_SITES = [
-  {name:"豆包",        url:"https://www.doubao.com",            desc:"AI 助手",   cat:"ai"},
-  {name:"ChatGPT",     url:"https://chatgpt.com",               desc:"OpenAI",    cat:"ai"},
-  {name:"Claude",      url:"https://claude.ai",                 desc:"Anthropic", cat:"ai"},
-  {name:"Kimi",        url:"https://kimi.moonshot.cn",          desc:"月之暗面",  cat:"ai"},
-  {name:"DeepSeek",    url:"https://chat.deepseek.com",         desc:"深度求索",  cat:"ai"},
-  {name:"通义千问",    url:"https://tongyi.aliyun.com",         desc:"阿里",      cat:"ai"},
-  {name:"Gemini",      url:"https://gemini.google.com",         desc:"Google",    cat:"ai"},
-  {name:"文心一言",    url:"https://yiyan.baidu.com",           desc:"百度",      cat:"ai"},
-  {name:"哔哩哔哩",    url:"https://www.bilibili.com",          desc:"B站",       cat:"video"},
-  {name:"YouTube",     url:"https://www.youtube.com",           desc:"YouTube",   cat:"video"},
-  {name:"抖音",        url:"https://www.douyin.com",            desc:"短视频",    cat:"video"},
-  {name:"快手",        url:"https://www.kuaishou.com",          desc:"短视频",    cat:"video"},
-  {name:"腾讯视频",    url:"https://v.qq.com",                  desc:"视频",      cat:"video"},
-  {name:"爱奇艺",      url:"https://www.iqiyi.com",             desc:"视频",      cat:"video"},
-  {name:"优酷",        url:"https://www.youku.com",             desc:"视频",      cat:"video"},
-  {name:"西瓜视频",    url:"https://www.ixigua.com",            desc:"视频",      cat:"video"},
-  {name:"微博",        url:"https://weibo.com",                 desc:"社交",      cat:"social"},
-  {name:"知乎",        url:"https://www.zhihu.com",             desc:"问答社区",  cat:"social"},
-  {name:"小红书",      url:"https://www.xiaohongshu.com",       desc:"生活方式",  cat:"social"},
-  {name:"豆瓣",        url:"https://www.douban.com",            desc:"书影音",    cat:"social"},
-  {name:"贴吧",        url:"https://tieba.baidu.com",           desc:"兴趣社区",  cat:"social"},
-  {name:"即刻",        url:"https://okjike.com",                desc:"兴趣社区",  cat:"social"},
-  {name:"脉脉",        url:"https://maimai.cn",                 desc:"职场社交",  cat:"social"},
-  {name:"微信",        url:"https://weixin.qq.com",             desc:"微信",      cat:"social"},
-  {name:"GitHub",      url:"https://github.com",                desc:"代码托管",  cat:"dev"},
-  {name:"Gitee",       url:"https://gitee.com",                 desc:"码云",      cat:"dev"},
-  {name:"Stack Overflow", url:"https://stackoverflow.com",      desc:"技术问答",  cat:"dev"},
-  {name:"掘金",        url:"https://juejin.cn",                 desc:"技术社区",  cat:"dev"},
-  {name:"V2EX",        url:"https://www.v2ex.com",              desc:"技术社区",  cat:"dev"},
-  {name:"菜鸟教程",    url:"https://www.runoob.com",            desc:"编程教程",  cat:"dev"},
-  {name:"MDN",         url:"https://developer.mozilla.org",     desc:"Web 文档",  cat:"dev"},
-  {name:"LeetCode",    url:"https://leetcode.cn",               desc:"刷题",      cat:"dev"},
-  {name:"百度",        url:"https://www.baidu.com",             desc:"搜索",      cat:"news"},
-  {name:"今日头条",    url:"https://www.toutiao.com",           desc:"资讯",      cat:"news"},
-  {name:"澎湃",        url:"https://www.thepaper.cn",           desc:"新闻",      cat:"news"},
-  {name:"36氪",        url:"https://36kr.com",                  desc:"科技商业",  cat:"news"},
-  {name:"虎嗅",        url:"https://www.huxiu.com",             desc:"科技商业",  cat:"news"},
-  {name:"网易新闻",    url:"https://news.163.com",              desc:"新闻",      cat:"news"},
-  {name:"腾讯新闻",    url:"https://news.qq.com",               desc:"新闻",      cat:"news"},
-  {name:"少数派",      url:"https://sspai.com",                 desc:"效率生活",  cat:"news"},
-  {name:"淘宝",        url:"https://www.taobao.com",            desc:"购物",      cat:"shop"},
-  {name:"京东",        url:"https://www.jd.com",                desc:"购物",      cat:"shop"},
-  {name:"拼多多",      url:"https://www.pinduoduo.com",         desc:"购物",      cat:"shop"},
-  {name:"闲鱼",        url:"https://www.goofish.com",           desc:"二手",      cat:"shop"},
-  {name:"当当",        url:"https://www.dangdang.com",          desc:"图书",      cat:"shop"},
-  {name:"苏宁易购",    url:"https://www.suning.com",            desc:"购物",      cat:"shop"},
-  {name:"亚马逊",      url:"https://www.amazon.cn",             desc:"海外购",    cat:"shop"},
-  {name:"什么值得买",  url:"https://www.smzdm.com",             desc:"比价",      cat:"shop"},
-  {name:"智谱清言",    url:"https://chatglm.cn",                 desc:"免费额度",  cat:"ai"},
-  {name:"讯飞星火",    url:"https://xinghuo.xfyun.cn",           desc:"免费额度",  cat:"ai"},
-  {name:"腾讯元宝",    url:"https://yuanbao.tencent.com",       desc:"免费额度",  cat:"ai"},
-  {name:"天工AI",      url:"https://www.tiangong.cn",           desc:"免费额度",  cat:"ai"},
-  {name:"Perplexity",  url:"https://www.perplexity.ai",         desc:"免费版",    cat:"ai"},
-  {name:"Copilot",     url:"https://copilot.microsoft.com",     desc:"免费额度",  cat:"ai"},
-  {name:"海螺AI",      url:"https://hailuoai.com",              desc:"免费额度",  cat:"ai"},
-  {name:"Poe",         url:"https://poe.com",                   desc:"多模型",    cat:"ai"},
-  {name:"HuggingFace", url:"https://huggingface.co",            desc:"开源模型",  cat:"ai"},
-  {name:"Replicate",   url:"https://replicate.com",             desc:"API 试用",  cat:"ai"},
-  {name:"百度网盘",    url:"https://pan.baidu.com",             desc:"网盘",      cat:"pan"},
-  {name:"阿里云盘",    url:"https://www.alipan.com",            desc:"网盘",      cat:"pan"},
-  {name:"夸克网盘",    url:"https://pan.quark.cn",              desc:"网盘",      cat:"pan"},
-  {name:"腾讯微云",    url:"https://www.weiyun.com",            desc:"网盘",      cat:"pan"},
-  {name:"123云盘",     url:"https://www.123pan.com",            desc:"网盘",      cat:"pan"},
-  {name:"蓝奏云",      url:"https://www.lanzoui.com",           desc:"网盘",      cat:"pan"},
-  {name:"奶牛快传",    url:"https://cowtransfer.com",           desc:"传输",      cat:"pan"},
-  {name:"天翼云盘",    url:"https://cloud.189.cn",              desc:"网盘",      cat:"pan"},
-  {name:"Notion",      url:"https://www.notion.so",             desc:"笔记",      cat:"tool"},
-  {name:"飞书",        url:"https://www.feishu.cn",             desc:"协作",      cat:"tool"},
-  {name:"钉钉",        url:"https://www.dingtalk.com",          desc:"协作",      cat:"tool"},
-  {name:"石墨文档",    url:"https://shimo.im",                  desc:"文档",      cat:"tool"},
-  {name:"语雀",        url:"https://www.yuque.com",             desc:"文档",      cat:"tool"},
-  {name:"腾讯文档",    url:"https://docs.qq.com",               desc:"文档",      cat:"tool"},
-  {name:"金山文档",    url:"https://www.kdocs.cn",              desc:"文档",      cat:"tool"},
-  {name:"ProcessOn",   url:"https://www.processon.com",         desc:"流程图",    cat:"tool"},
-  {name:"Canva可画",   url:"https://www.canva.cn",              desc:"设计",      cat:"tool"},
-  {name:"印象笔记",    url:"https://www.yinxiang.com",          desc:"笔记",      cat:"tool"},
-  {name:"中国大学MOOC",url:"https://www.icourse163.org",        desc:"公开课",    cat:"study"},
-  {name:"Coursera",    url:"https://www.coursera.org",          desc:"公开课",    cat:"study"},
-  {name:"学堂在线",    url:"https://www.xuetangx.com",          desc:"公开课",    cat:"study"},
-  {name:"网易公开课",  url:"https://open.163.com",              desc:"视频课",    cat:"study"},
-  {name:"得到",        url:"https://www.dedao.cn",              desc:"知识付费",  cat:"study"},
-  {name:"可汗学院",    url:"https://zh.khanacademy.org",        desc:"免费课程",  cat:"study"},
-  {name:"多邻国",      url:"https://www.duolingo.com",          desc:"语言学习",  cat:"study"},
-  {name:"TED",         url:"https://www.ted.com",               desc:"演讲",      cat:"study"},
-  {name:"网易云音乐",  url:"https://music.163.com",             desc:"音乐",      cat:"media"},
-  {name:"QQ音乐",      url:"https://y.qq.com",                  desc:"音乐",      cat:"media"},
-  {name:"酷狗音乐",    url:"https://www.kugou.com",             desc:"音乐",      cat:"media"},
-  {name:"喜马拉雅",    url:"https://www.ximalaya.com",          desc:"有声",      cat:"media"},
-  {name:"芒果TV",      url:"https://www.mgtv.com",              desc:"视频",      cat:"media"},
-  {name:"咪咕视频",    url:"https://www.miguvideo.com",         desc:"视频",      cat:"media"},
-  {name:"央视网",      url:"https://www.cctv.com",              desc:"视频",      cat:"media"},
-  {name:"搜狐视频",    url:"https://tv.sohu.com",               desc:"视频",      cat:"media"}
-];
+var DEFAULT_SITES = window.DEFAULT_SITES || [];
 var HOT_WORDS = ["AI 新闻","前端教程","最新电影","数码测评","电子书","游戏攻略"];
 var ENGINES = {
   baidu:"https://www.baidu.com/s?wd=",
