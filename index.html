@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>导航 · 浏览器新标签页</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%2322d3ee'/><circle cx='12' cy='12' r='6' fill='none' stroke='%230b0e14' stroke-width='2.4'/><path d='M12 6l1.8 4.2L18 12l-4.2 1.8L12 18l-1.8-4.2L6 12l4.2-1.8z' fill='%230b0e14'/></svg>">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+/* ===== 基础 ===== */
+:root{
+  --bg:#0b0e14;
+  --bg-soft:#11151f;
+  --card:#151a26;
+  --card-hover:#1c2230;
+  --border:rgba(255,255,255,.07);
+  --text:#e8ecf4;
+  --text-dim:#8b94a7;
+  --accent:#22d3ee;
+  --accent-soft:rgba(34,211,238,.14);
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+  --radius:14px;
+}
+[data-theme="light"]{
+  --bg:#eef2f8;
+  --bg-soft:#e6ebf3;
+  --card:#ffffff;
+  --card-hover:#f3f6fb;
+  --border:rgba(15,23,42,.08);
+  --text:#16213a;
+  --text-dim:#5b6678;
+  --accent:#0891b2;
+  --accent-soft:rgba(8,145,178,.1);
+  --shadow:0 10px 30px rgba(30,50,90,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;
+  transition:background .3s,color .3s;
+}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer}
+::selection{background:var(--accent-soft)}
+/* 背景装饰 */
+.bg-deco{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.bg-deco::before,.bg-deco::after{content:"";position:absolute;border-radius:50%;filter:blur(90px);opacity:.35}
+.bg-deco::before{width:520px;height:520px;background:rgba(34,211,238,.16);top:-180px;left:10%}
+.bg-deco::after{width:420px;height:420px;background:rgba(99,102,241,.14);bottom:-160px;right:8%}
+[data-theme="light"] .bg-deco::before{opacity:.5}
+[data-theme="light"] .bg-deco::after{opacity:.45}
+
+/* ===== 顶部栏 ===== */
+.topbar{
+  position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;
+  padding:18px 28px;max-width:1180px;margin:0 auto;
+}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
+.brand .logo{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),#6366f1);box-shadow:0 4px 14px rgba(34,211,238,.3)}
+.brand .logo svg{width:17px;height:17px}
+.brand small{font-weight:400;color:var(--text-dim);font-size:12px;margin-left:2px}
+.top-actions{display:flex;align-items:center;gap:10px}
+.icon-btn{
+  width:38px;height:38px;border-radius:10px;display:grid;place-items:center;
+  background:var(--card);border:1px solid var(--border);transition:.2s;
+}
+.icon-btn:hover{background:var(--card-hover);transform:translateY(-1px)}
+.icon-btn svg{width:18px;height:18px}
+
+/* ===== 主区 ===== */
+main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:6px 24px 90px}
+.hero{text-align:center;padding:34px 0 8px}
+.clock{font-size:64px;font-weight:300;letter-spacing:2px;line-height:1.05;font-variant-numeric:tabular-nums}
+.date-line{margin-top:10px;color:var(--text-dim);font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px}
+.greet{font-size:17px;font-weight:500;margin-top:8px}
+.greet b{color:var(--accent);font-weight:700}
+
+/* 搜索框 */
+.search-wrap{margin:30px auto 8px;max-width:660px}
+.search-box{
+  display:flex;align-items:center;gap:4px;background:var(--card);
+  border:1px solid var(--border);border-radius:16px;padding:8px 10px;
+  box-shadow:var(--shadow);transition:.25s;
+}
+.search-box:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft),var(--shadow)}
+.engine-sel{
+  display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:10px;
+  color:var(--text);font-size:14px;background:var(--bg-soft);border:1px solid var(--border);
+  appearance:none;-webkit-appearance:none;cursor:pointer;flex-shrink:0;
+}
+.search-box input{
+  flex:1;background:transparent;border:none;outline:none;color:var(--text);
+  font-size:16px;padding:10px 12px;font-family:inherit;
+}
+.search-box input::placeholder{color:var(--text-dim)}
+.search-btn{
+  flex-shrink:0;display:flex;align-items:center;gap:6px;padding:10px 18px;border-radius:10px;
+  background:var(--accent);color:#04222b;font-weight:700;font-size:14px;transition:.2s;
+}
+.search-btn:hover{filter:brightness(1.12)}
+.search-btn svg{width:16px;height:16px}
+.hot-tips{margin-top:14px;font-size:13px;color:var(--text-dim);display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.hot-tips a{padding:7px 14px;border-radius:20px;background:var(--card);border:1px solid var(--border);transition:.2s;font-size:12px}
+.hot-tips a:hover{border-color:var(--accent);color:var(--accent)}
+
+/* 分类导航 */
+.cats{display:flex;align-items:center;justify-content:center;gap:8px;margin:34px 0 22px;flex-wrap:wrap}
+.cat-btn{
+  padding:10px 18px;border-radius:999px;font-size:14px;color:var(--text-dim);
+  border:1px solid var(--border);background:var(--card);transition:.2s;
+}
+.cat-btn:hover{color:var(--text);border-color:var(--accent)}
+.cat-btn.active{background:var(--accent);color:#04222b;font-weight:700;border-color:var(--accent)}
+.cat-btn .count{font-size:11px;opacity:.7;margin-left:4px}
+.add-site-btn{padding:8px 16px;border-radius:999px;font-size:14px;color:var(--accent);border:1px dashed var(--accent);transition:.2s;display:flex;align-items:center;gap:6px}
+.add-site-btn:hover{background:var(--accent-soft)}
+
+/* 站点网格 */
+.site-group{margin-bottom:36px}
+.group-title{
+  display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;margin-bottom:16px;
+  padding-left:12px;border-left:3px solid var(--accent);
+}
+.group-title .g-count{font-size:12px;color:var(--text-dim);font-weight:400}
+.grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;
+}
+.site-card{
+  position:relative;display:flex;align-items:center;gap:12px;padding:14px;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  transition:.22s;overflow:hidden;
+}
+.site-card:hover{background:var(--card-hover);transform:translateY(-3px);border-color:var(--accent);box-shadow:var(--shadow)}
+.site-ico{
+  width:40px;height:40px;border-radius:11px;flex-shrink:0;display:grid;place-items:center;
+  font-weight:700;font-size:17px;color:#fff;letter-spacing:0;
+}
+.site-meta{flex:1;min-width:0}
+.site-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.site-desc{font-size:12px;color:var(--text-dim);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.site-del{
+  position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:7px;
+  display:none;place-items:center;background:rgba(239,68,68,.15);color:#f87171;font-size:12px;
+}
+.site-card:hover .site-del{display:grid}
+.site-del:hover{background:rgba(239,68,68,.3)}
+
+/* 空态 */
+.empty{padding:40px;text-align:center;color:var(--text-dim);border:1px dashed var(--border);border-radius:var(--radius)}
+
+/* ===== 页脚 ===== */
+footer{position:relative;z-index:1;text-align:center;padding:26px 20px 40px;color:var(--text-dim);font-size:13px;border-top:1px solid var(--border);max-width:1180px;margin:0 auto}
+footer .foot-links{margin-bottom:8px;display:flex;justify-content:center;gap:18px}
+footer .foot-links a{color:var(--text-dim);transition:.2s}
+footer .foot-links a:hover{color:var(--accent)}
+
+/* ===== 添加站点弹窗 ===== */
+.modal-mask{position:fixed;inset:0;background:rgba(4,8,16,.6);backdrop-filter:blur(4px);z-index:50;display:none;place-items:center}
+.modal-mask.show{display:grid}
+.modal{
+  width:min(440px,92vw);background:var(--bg-soft);border:1px solid var(--border);border-radius:18px;
+  padding:26px;box-shadow:var(--shadow);
+}
+.modal h3{font-size:17px;margin-bottom:18px}
+.modal label{display:block;font-size:13px;color:var(--text-dim);margin:14px 0 6px}
+.modal input,.modal select{
+  width:100%;padding:11px 13px;border-radius:10px;background:var(--card);
+  border:1px solid var(--border);color:var(--text);font-size:14px;font-family:inherit;outline:none;
+}
+.modal input:focus,.modal select:focus{border-color:var(--accent)}
+.modal-row{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+.modal-row button{padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600}
+.btn-cancel{background:var(--card);border:1px solid var(--border);color:var(--text)}
+.btn-ok{background:var(--accent);color:#04222b}
+
+/* 提示 toast */
+.toast{
+  position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+  background:var(--text);color:var(--bg);padding:11px 22px;border-radius:12px;font-size:14px;
+  opacity:0;pointer-events:none;transition:.3s;z-index:60;font-weight:500;box-shadow:var(--shadow);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== 响应式 ===== */
+@media (max-width:720px){
+  .clock{font-size:44px}
+  .topbar{padding:14px 16px}
+  main{padding:4px 14px 70px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px}
+  .search-box{flex-wrap:wrap;padding:10px}
+  .engine-sel{width:100%}
+  .search-box input{width:100%}
+  .search-btn{width:100%;justify-content:center;padding:12px}
+  .hero{padding:22px 0 4px}
+  .icon-btn{width:44px;height:44px}
+  footer .foot-links a{padding:8px 6px}
+}
+@media (max-width:420px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .clock{font-size:36px}
+}
+</style>
+</head>
+<body>
+<div class="bg-deco"></div>
+
+<!-- ===== 顶部栏 ===== -->
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="2.2"/><path d="M15.5 8.5l-2.2 4.8L8.5 15.5l2.2-4.8z" fill="#fff"/><path d="M13.3 13.3L18 18" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </span>
+    导航<small>· 浏览器新标签页</small>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn" id="themeToggle" title="切换深浅色">
+      <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5 5l1.9 1.9M17.1 17.1L19 19M19 5l-1.9 1.9M6.9 17.1L5 19"/></svg>
+      <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/></svg>
+    </button>
+    <a class="icon-btn" id="githubLink" href="https://github.com/" target="_blank" rel="noopener" title="GitHub">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.27-.01-1.17-.02-2.12-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.75 2.69 1.25 3.35.95.1-.74.4-1.25.72-1.54-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11.1 11.1 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12 0 1.53-.01 2.76-.01 3.14 0 .31.21.68.8.56A11.52 11.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+    </a>
+  </div>
+</header>
+
+<!-- ===== 主区 ===== -->
+<main>
+  <section class="hero">
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="date-line" id="dateLine"></div>
+    <div class="greet" id="greet">你好，今天想去哪里？</div>
+
+    <div class="search-wrap">
+      <form class="search-box" id="searchForm" autocomplete="off">
+        <select class="engine-sel" id="engineSel" title="切换搜索引擎">
+          <option value="baidu">百度</option>
+          <option value="bing">必应</option>
+          <option value="google">Google</option>
+          <option value="github">GitHub</option>
+          <option value="zhihu">知乎</option>
+          <option value="bilibili">B站</option>
+        </select>
+        <input id="searchInput" type="text" placeholder="输入关键词，回车搜索…" autofocus>
+        <button class="search-btn" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          搜索
+        </button>
+      </form>
+      <div class="hot-tips" id="hotTips"></div>
+    </div>
+  </section>
+
+  <!-- ===== 分类栏 ===== -->
+  <nav class="cats" id="catsBar"></nav>
+
+  <!-- ===== 站点分组 ===== -->
+  <div id="siteGroups"></div>
+  <div class="empty" id="emptyState" style="display:none">该分类下暂无站点，点右上角「添加站点」试试</div>
+</main>
+
+<!-- ===== 页脚 ===== -->
+<footer>
+  <div class="foot-links">
+    <a href="#" id="resetLink">恢复默认</a>
+    <a href="#" id="exportLink">导出配置</a>
+    <a href="#" id="importLink">导入配置</a>
+  </div>
+  <div>纯链接导航 · 点击卡片直接跳转 · 自定义站点保存在本机浏览器</div>
+</footer>
+
+<!-- ===== 添加站点弹窗 ===== -->
+<div class="modal-mask" id="modalMask">
+  <div class="modal">
+    <h3>添加导航站点</h3>
+    <label>名称</label>
+    <input id="fName" type="text" placeholder="例如：豆包">
+    <label>网址（https://…）</label>
+    <input id="fUrl" type="text" placeholder="https://www.doubao.com">
+    <label>所属分类</label>
+    <select id="fCat"></select>
+    <div class="modal-row">
+      <button class="btn-cancel" id="modalCancel">取消</button>
+      <button class="btn-ok" id="modalOk">添加</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== 数据 ===== */
+var CATS = [
+  {id:"ai",    name:"AI 工具", color:"#6366f1"},
+  {id:"video", name:"视频",   color:"#ef4444"},
+  {id:"social",name:"社交",   color:"#f59e0b"},
+  {id:"dev",   name:"开发",   color:"#10b981"},
+  {id:"news",  name:"资讯",   color:"#0ea5e9"},
+  {id:"shop",  name:"购物",   color:"#ec4899"}
+];
+var DEFAULT_SITES = [
+  {name:"豆包",        url:"https://www.doubao.com",            desc:"AI 助手",   cat:"ai"},
+  {name:"ChatGPT",     url:"https://chatgpt.com",               desc:"OpenAI",    cat:"ai"},
+  {name:"Claude",      url:"https://claude.ai",                 desc:"Anthropic", cat:"ai"},
+  {name:"Kimi",        url:"https://kimi.moonshot.cn",          desc:"月之暗面",  cat:"ai"},
+  {name:"DeepSeek",    url:"https://chat.deepseek.com",         desc:"深度求索",  cat:"ai"},
+  {name:"通义千问",    url:"https://tongyi.aliyun.com",         desc:"阿里",      cat:"ai"},
+  {name:"Gemini",      url:"https://gemini.google.com",         desc:"Google",    cat:"ai"},
+  {name:"文心一言",    url:"https://yiyan.baidu.com",           desc:"百度",      cat:"ai"},
+  {name:"哔哩哔哩",    url:"https://www.bilibili.com",          desc:"B站",       cat:"video"},
+  {name:"YouTube",     url:"https://www.youtube.com",           desc:"YouTube",   cat:"video"},
+  {name:"抖音",        url:"https://www.douyin.com",            desc:"短视频",    cat:"video"},
+  {name:"快手",        url:"https://www.kuaishou.com",          desc:"短视频",    cat:"video"},
+  {name:"腾讯视频",    url:"https://v.qq.com",                  desc:"视频",      cat:"video"},
+  {name:"爱奇艺",      url:"https://www.iqiyi.com",             desc:"视频",      cat:"video"},
+  {name:"优酷",        url:"https://www.youku.com",             desc:"视频",      cat:"video"},
+  {name:"西瓜视频",    url:"https://www.ixigua.com",            desc:"视频",      cat:"video"},
+  {name:"微博",        url:"https://weibo.com",                 desc:"社交",      cat:"social"},
+  {name:"知乎",        url:"https://www.zhihu.com",             desc:"问答社区",  cat:"social"},
+  {name:"小红书",      url:"https://www.xiaohongshu.com",       desc:"生活方式",  cat:"social"},
+  {name:"豆瓣",        url:"https://www.douban.com",            desc:"书影音",    cat:"social"},
+  {name:"贴吧",        url:"https://tieba.baidu.com",           desc:"兴趣社区",  cat:"social"},
+  {name:"即刻",        url:"https://okjike.com",                desc:"兴趣社区",  cat:"social"},
+  {name:"脉脉",        url:"https://maimai.cn",                 desc:"职场社交",  cat:"social"},
+  {name:"微信",        url:"https://weixin.qq.com",             desc:"微信",      cat:"social"},
+  {name:"GitHub",      url:"https://github.com",                desc:"代码托管",  cat:"dev"},
+  {name:"Gitee",       url:"https://gitee.com",                 desc:"码云",      cat:"dev"},
+  {name:"Stack Overflow", url:"https://stackoverflow.com",      desc:"技术问答",  cat:"dev"},
+  {name:"掘金",        url:"https://juejin.cn",                 desc:"技术社区",  cat:"dev"},
+  {name:"V2EX",        url:"https://www.v2ex.com",              desc:"技术社区",  cat:"dev"},
+  {name:"菜鸟教程",    url:"https://www.runoob.com",            desc:"编程教程",  cat:"dev"},
+  {name:"MDN",         url:"https://developer.mozilla.org",     desc:"Web 文档",  cat:"dev"},
+  {name:"LeetCode",    url:"https://leetcode.cn",               desc:"刷题",      cat:"dev"},
+  {name:"百度",        url:"https://www.baidu.com",             desc:"搜索",      cat:"news"},
+  {name:"今日头条",    url:"https://www.toutiao.com",           desc:"资讯",      cat:"news"},
+  {name:"澎湃",        url:"https://www.thepaper.cn",           desc:"新闻",      cat:"news"},
+  {name:"36氪",        url:"https://36kr.com",                  desc:"科技商业",  cat:"news"},
+  {name:"虎嗅",        url:"https://www.huxiu.com",             desc:"科技商业",  cat:"news"},
+  {name:"网易新闻",    url:"https://news.163.com",              desc:"新闻",      cat:"news"},
+  {name:"腾讯新闻",    url:"https://news.qq.com",               desc:"新闻",      cat:"news"},
+  {name:"少数派",      url:"https://sspai.com",                 desc:"效率生活",  cat:"news"},
+  {name:"淘宝",        url:"https://www.taobao.com",            desc:"购物",      cat:"shop"},
+  {name:"京东",        url:"https://www.jd.com",                desc:"购物",      cat:"shop"},
+  {name:"拼多多",      url:"https://www.pinduoduo.com",         desc:"购物",      cat:"shop"},
+  {name:"闲鱼",        url:"https://www.goofish.com",           desc:"二手",      cat:"shop"},
+  {name:"当当",        url:"https://www.dangdang.com",          desc:"图书",      cat:"shop"},
+  {name:"苏宁易购",    url:"https://www.suning.com",            desc:"购物",      cat:"shop"},
+  {name:"亚马逊",      url:"https://www.amazon.cn",             desc:"海外购",    cat:"shop"},
+  {name:"什么值得买",  url:"https://www.smzdm.com",             desc:"比价",      cat:"shop"}
+];
+var HOT_WORDS = ["AI 新闻","前端教程","最新电影","数码测评","电子书","游戏攻略"];
+var ENGINES = {
+  baidu:"https://www.baidu.com/s?wd=",
+  bing:"https://www.bing.com/search?q=",
+  google:"https://www.google.com/search?q=",
+  github:"https://github.com/search?q=",
+  zhihu:"https://www.zhihu.com/search?type=content&q=",
+  bilibili:"https://search.bilibili.com/all?keyword="
+};
+
+/* ===== 状态 ===== */
+var customSites = [];   // 用户新增
+var removedIds  = [];   // 用户删除的默认站点（用 name+url 作 id）
+var currentCat  = "all";
+var catNameById = {}; CATS.forEach(function(c){catNameById[c.id]=c.name});
+var isDefault = function(s){return DEFAULT_SITES.some(function(d){return d.name===s.name&&d.url===s.url})};
+var siteId = function(s){return s.name+"|"+s.url};
+
+/* ===== 存储 ===== */
+function load(){
+  try{
+    customSites = JSON.parse(localStorage.getItem("dh-sites"))||[];
+    removedIds  = JSON.parse(localStorage.getItem("dh-removed"))||[];
+    var th = localStorage.getItem("dh-theme");
+    if(th){document.documentElement.setAttribute("data-theme",th);syncThemeIcon()}
+  }catch(e){customSites=[];removedIds=[]}
+}
+function save(){
+  localStorage.setItem("dh-sites",JSON.stringify(customSites));
+  localStorage.setItem("dh-removed",JSON.stringify(removedIds));
+}
+function allSites(){
+  var merged = customSites.concat(DEFAULT_SITES);
+  return merged.filter(function(s){return removedIds.indexOf(siteId(s))<0});
+}
+
+/* ===== 工具 ===== */
+function esc(t){var d=document.createElement("div");d.textContent=t;return d.innerHTML}
+function toast(msg){
+  var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove("show")},1800);
+}
+function catColor(cid){var c=CATS.find(function(x){return x.id===cid});return c?c.color:"#64748b"}
+
+/* ===== 时钟 ===== */
+function pad(n){return n<10?"0"+n:""+n}
+function tick(){
+  var now=new Date();
+  document.getElementById("clock").textContent =
+    pad(now.getHours())+":"+pad(now.getMinutes())+":"+pad(now.getSeconds());
+  var week=["日","一","二","三","四","五","六"];
+  document.getElementById("dateLine").textContent =
+    now.getFullYear()+"年"+(now.getMonth()+1)+"月"+now.getDate()+"日 · 星期"+week[now.getDay()];
+  var h=now.getHours(),g="深夜了，注意休息";
+  if(h>=5&&h<9)g="早上好";else if(h>=9&&h<12)g="上午好";else if(h>=12&&h<14)g="中午好";
+  else if(h>=14&&h<18)g="下午好";else if(h>=18&&h<23)g="晚上好";
+  document.getElementById("greet").innerHTML = g+"，<b>今天想去哪里？</b>";
+}
+setInterval(tick,1000);tick();
+
+/* ===== 主题 ===== */
+function syncThemeIcon(){
+  var dark=document.documentElement.getAttribute("data-theme")!=="light";
+  document.getElementById("iconSun").style.display=dark?"none":"";
+  document.getElementById("iconMoon").style.display=dark?"":"none";
+}
+document.getElementById("themeToggle").addEventListener("click",function(){
+  var cur=document.documentElement.getAttribute("data-theme")==="light"?"dark":"light";
+  document.documentElement.setAttribute("data-theme",cur);
+  localStorage.setItem("dh-theme",cur);syncThemeIcon();
+});
+
+/* ===== 搜索 ===== */
+document.getElementById("searchForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  var kw=document.getElementById("searchInput").value.trim();
+  if(!kw){toast("先输入搜索关键词");return}
+  var eng=document.getElementById("engineSel").value;
+  window.open(ENGINES[eng]+encodeURIComponent(kw),"_blank","noopener");
+});
+function renderHot(){
+  var box=document.getElementById("hotTips");
+  box.innerHTML=HOT_WORDS.map(function(w){
+    return '<a href="#" data-kw="'+esc(w)+'">'+esc(w)+"</a>";
+  }).join("");
+}
+document.getElementById("hotTips").addEventListener("click",function(e){
+  var a=e.target.closest("a[data-kw]");
+  if(a){e.preventDefault();window.open(ENGINES[document.getElementById("engineSel").value]+encodeURIComponent(a.getAttribute("data-kw")),"_blank","noopener")}
+});
+
+/* ===== 渲染 ===== */
+function renderCats(){
+  var box=document.getElementById("catsBar");
+  var html='<button class="cat-btn'+(currentCat==="all"?" active":"")+'" data-cat="all">全部 <span class="count">'+allSites().length+"</span></button>";
+  CATS.forEach(function(c){
+    var n=allSites().filter(function(s){return s.cat===c.id}).length;
+    html+='<button class="cat-btn'+(currentCat===c.id?" active":"")+'" data-cat="'+c.id+'">'+c.name+' <span class="count">'+n+"</span></button>";
+  });
+  html+='<button class="add-site-btn" id="openAddBtn"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>添加站点</button>';
+  box.innerHTML=html;
+  document.getElementById("openAddBtn").addEventListener("click",openModal);
+}
+function renderGroups(){
+  var wrap=document.getElementById("siteGroups"),list=allSites(),html="";
+  CATS.forEach(function(c){
+    var items=list.filter(function(s){return s.cat===c.id});
+    if(currentCat!=="all"&&currentCat!==c.id)return;
+    if(!items.length)return;
+    html+='<section class="site-group" data-cat="'+c.id+'">'+
+      '<h2 class="group-title">'+c.name+'<span class="g-count">'+items.length+" 个</span></h2>"+
+      '<div class="grid">'+items.map(function(s){
+        var letter=esc(s.name.charAt(0).toUpperCase());
+        return '<a class="site-card" href="'+esc(s.url)+'" target="_blank" rel="noopener" title="'+esc(s.name)+' · '+esc(s.url)+'">'+
+          '<span class="site-ico" style="background:'+catColor(s.cat)+'">'+letter+"</span>"+
+          '<span class="site-meta"><span class="site-name">'+esc(s.name)+'</span><span class="site-desc">'+esc(s.desc||s.url.replace(/^https?:\/\//,"").replace(/\/$/,""))+'</span></span>'+
+          '<span class="site-del" data-del="'+esc(siteId(s))+'" title="删除此站点">✕</span>'+
+        "</a>";
+      }).join("")+"</div></section>";
+  });
+  wrap.innerHTML=html;
+  document.getElementById("emptyState").style.display=html?"none":"";
+}
+document.getElementById("catsBar").addEventListener("click",function(e){
+  var b=e.target.closest(".cat-btn[data-cat]");
+  if(b){currentCat=b.getAttribute("data-cat");renderCats();renderGroups()}
+});
+document.getElementById("siteGroups").addEventListener("click",function(e){
+  var d=e.target.closest(".site-del");
+  if(!d)return;e.preventDefault();e.stopPropagation();
+  var id=d.getAttribute("data-del");
+  var target=allSites().find(function(s){return siteId(s)===id});
+  if(!target)return;
+  if(isDefault(target)){removedIds.push(id);customSites=customSites.filter(function(s){return siteId(s)!==id})}
+  else{customSites=customSites.filter(function(s){return siteId(s)!==id})}
+  save();renderCats();renderGroups();toast("已删除「"+target.name+"」");
+});
+
+/* ===== 添加站点 ===== */
+function openModal(){
+  document.getElementById("fName").value="";document.getElementById("fUrl").value="";
+  var sel=document.getElementById("fCat");
+  sel.innerHTML=CATS.map(function(c){return '<option value="'+c.id+'">'+c.name+"</option>"}).join("");
+  document.getElementById("modalMask").classList.add("show");
+  document.getElementById("fName").focus();
+}
+document.getElementById("modalCancel").addEventListener("click",function(){
+  document.getElementById("modalMask").classList.remove("show");
+});
+document.getElementById("modalMask").addEventListener("click",function(e){
+  if(e.target===this)this.classList.remove("show");
+});
+document.getElementById("modalOk").addEventListener("click",addSite);
+function addSite(){
+  var name=document.getElementById("fName").value.trim();
+  var url=document.getElementById("fUrl").value.trim();
+  var cat=document.getElementById("fCat").value;
+  if(!name||!url){toast("名称和网址都要填");return}
+  if(!/^https?:\/\/.+/i.test(url)){
+    if(/^[^.\s]+\.[^.\s]+/i.test(url)){url="https://"+url}
+    else{toast("网址格式不正确，需以 http(s):// 开头");return}
+  }
+  customSites.unshift({name:name,url:url,cat:cat,desc:"自定义"});
+  save();document.getElementById("modalMask").classList.remove("show");
+  renderCats();renderGroups();toast("已添加「"+name+"」");
+}
+document.getElementById("fUrl").addEventListener("keydown",function(e){if(e.key==="Enter")addSite()});
+
+/* ===== 页脚操作 ===== */
+document.getElementById("resetLink").addEventListener("click",function(e){
+  e.preventDefault();
+  if(!confirm("恢复默认将清空所有自定义与删除记录，确定？"))return;
+  localStorage.removeItem("dh-sites");localStorage.removeItem("dh-removed");
+  customSites=[];removedIds=[];renderCats();renderGroups();toast("已恢复默认");
+});
+document.getElementById("exportLink").addEventListener("click",function(e){
+  e.preventDefault();
+  var data={customSites:customSites,removedIds:removedIds};
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="导航页配置-"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},100);
+  toast("配置已导出");
+});
+var fileInput=document.createElement("input");
+fileInput.type="file";fileInput.accept=".json,application/json";
+document.getElementById("importLink").addEventListener("click",function(e){
+  e.preventDefault();fileInput.click();
+});
+fileInput.addEventListener("change",function(){
+  var f=fileInput.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{
+      var d=JSON.parse(r.result);
+      if(d.customSites&&Array.isArray(d.customSites)){
+        customSites=d.customSites;removedIds=d.removedIds||[];
+        save();renderCats();renderGroups();toast("配置已导入");
+      }else toast("文件格式不对");
+    }catch(err){toast("读取失败，请检查文件")}
+  };
+  r.readAsText(f);fileInput.value="";
+});
+
+/* ===== 启动 ===== */
+load();renderHot();renderCats();renderGroups();
+</script>
+</body>
+</html>
